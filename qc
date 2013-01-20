@@ -93,18 +93,18 @@ usage(){
 #
 set_image_name() {
   while true; do
-      echo -n "Please set image name: "
-      read input
-      if [ -z ${input} ]; then
-	echo "No name set. Please set one: "
+    echo -n "Please set image name: "
+    read input
+    if [ -z ${input} ]; then
+      echo "No name set. Please set one: "
+    else
+      if [ -e "${VG_PATH}/${input}" ]; then
+	echo "Image exists already. Please choose a different name: "
       else
-	if [ -e "${VG_PATH}/${input}" ]; then
-	  echo "Image exists already. Please choose a different name: "
-	else
-	  IMAGE_NAME=${input}
-	  break
-	fi
+	IMAGE_NAME=${input}
+	break
       fi
+    fi
   done
 }
 
