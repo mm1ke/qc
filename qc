@@ -351,7 +351,7 @@ if [ $# -lt 1 ]; then
 else
   doing="${1}"
   echo ">--------< QC >--------<"
-  echo "> --- Qemu Control --- <"
+  echo ">---< Qemu Control >---<"
   pause "Press any key to continue ..."
   echo "=============================="
   echo "Default LV is \"${VG_PATH}\" "
