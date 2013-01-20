@@ -159,13 +159,17 @@ info_changes(){
       echo " Image to copy: ${IMAGE_TO_COPY}"
       echo " New Guest Name: ${IMAGE_NAME}"
       (${GENTOO_TEST_INSTANCE}) && echo " This will be a Gentoo Test Instance"
+      echo " New Guest will be stored under: ${VG_PATH}/${IMAGE_NAME}"
       ;;
     new)
       echo " New Guest Name: ${IMAGE_NAME}"
       echo " New Guest Size: ${IMAGE_SIZE}"
+      echo " New Guest will be stored under: ${VG_PATH}/${IMAGE_NAME}"
+      ;;
+    del)
+      echo " Guest to delete: ${RM_GUEST}"
       ;;
     esac
-  echo " New Guest will be stored under: ${VG_PATH}/${IMAGE_NAME}"
   echo "#===================#"
   pause "Press any key to continue (Cancel with CTRL+C) ..."
 }
@@ -209,7 +213,7 @@ edit_vm() {
   
   # change settings with gss
   if (${GENTOO_TEST_INSTANCE}); then
-    ${GSS} batchmode "/tmp/${TMP_DIR}/" gti
+    [ -e ${GSS} ] && ${GSS} batchmode "/tmp/${TMP_DIR}/" gti
   fi
 
   # copy gss to root's home dir
@@ -254,6 +258,7 @@ delete_guest(){
   echo "You choose ${RM_GUEST}"
   
   echo "*** WARNING ***"
+  info_changes del
   pause "You really want to delete ${RM_GUEST}? (Press Ctrl+C for cancel) "
 
   # stop the virtual guest
