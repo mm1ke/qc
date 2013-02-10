@@ -43,6 +43,7 @@ LVDISPLAY="/sbin/lvdisplay"
 RC_SERVICE="/sbin/rc-service"
 KPARTX="/sbin/kpartx"
 CUT="/bin/cut"
+QEMUIMG="/usr/bin/qemu-img"
 
 # default paths
 VG_NAME="vms"
@@ -326,6 +327,45 @@ copy_guest(){
   
   # modify config file
   edit_vm ${IMAGE_NAME}
+}
+
+#
+# convert_guest()
+# convert a lvm partition to qcow2
+#
+convert_guest(){
+  echo "Select the image to convert:"
+  CONV_GUEST=$(select_from "`${LS} ${VG_PATH}`")
+  echo "Set path, where the image should be stored"
+  while true; do
+    read input
+    if [ -z ${input} ]; then
+      echo "No path set. Please set one: "
+    else
+      if ! [ -d "${input}" ]; then
+	echo "Path dosent exists"
+      else
+	QCOW2_PATH=${input}
+	break
+      fi
+    fi
+  done
+  echo "Set Image name, if nothing set name will be: ${CONV_GUEST}.qcow2"
+  while true; do
+    read input
+    if [ -z ${input} ]; then
+      QCOW2_NAME=${CONV_GUEST}
+    fi
+    if [ -e "${QCOW2_PATH}/${input}" ]; then
+      echo "File exists, choose different name"
+    else
+      QCOW2_NAME=${input}
+      break
+    fi
+  done
+  echo "You choose ${CONV_GUEST}"
+  
+  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2  
 }
 
 # start of the script
