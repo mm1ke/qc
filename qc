@@ -85,6 +85,7 @@ usage(){
   echo "$0 new		creating a new guest"
   echo "$0 edit		edit guest config file"
   echo "$0 del		delete a guest image"
+  echo "$0 convert	convert a lvm2 image to qcow2"
   exit 1
 }
 
@@ -137,9 +138,9 @@ create_lv(){
 #
 info_changes(){
   echo " == QC is ready to start == "
-  echo "DOING: ${1}"
+  echo "DOING: ${doing}"
   echo "#===================#"
-  case ${1} in
+  case ${doing} in
     copy)
       echo " Image to copy: ${IMAGE_TO_COPY}"
       echo " New Guest Name: ${IMAGE_NAME}"
@@ -153,6 +154,10 @@ info_changes(){
       ;;
     del)
       echo " Guest to delete: ${RM_GUEST}"
+      ;;
+    convert)
+      echo " Image to convert ${CONV_GUEST}"
+      echo " Full path of the image: ${QCOW2_PATH}/${QCOW2_NAME}.qcow2"
       ;;
     esac
   echo "#===================#"
@@ -336,12 +341,10 @@ copy_guest(){
 convert_guest(){
   echo "Select the image to convert:"
   CONV_GUEST=$(select_from "`${LS} ${VG_PATH}`")
-  echo "Set path, where the image should be stored"
   while true; do
+    echo -n "Set path, where the image should be stored: "
     read input
-    if [ -z ${input} ]; then
-      echo "No path set. Please set one: "
-    else
+    if ! [ -z ${input} ]; then
       if ! [ -d "${input}" ]; then
 	echo "Path dosent exists"
       else
@@ -350,20 +353,22 @@ convert_guest(){
       fi
     fi
   done
-  echo "Set Image name, if nothing set name will be: ${CONV_GUEST}.qcow2"
   while true; do
+    echo -n "Set Image name [default: ${CONV_GUEST}.qcow2]: "
     read input
     if [ -z ${input} ]; then
       QCOW2_NAME=${CONV_GUEST}
-    fi
-    if [ -e "${QCOW2_PATH}/${input}" ]; then
-      echo "File exists, choose different name"
     else
       QCOW2_NAME=${input}
+    fi
+    if [ -e "${QCOW2_PATH}/${QCOW2_NAME}.qcow2" ]; then
+      echo "File exists, choose different name"
+    else
       break
     fi
   done
-  echo "You choose ${CONV_GUEST}"
+  
+  info_changes
   
   ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2  
 }
