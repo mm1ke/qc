@@ -109,22 +109,6 @@ set_image_name() {
 }
 
 #
-# set_image_details()
-# set other detauls for a guest (so far just the ip)
-#
-set_image_details(){
-  READ_INPUT=""
-  while true; do
-    read READ_INPUT
-    if [ -z ${READ_INPUT} ]; then
-      echo "No input! Please enter needed information: "
-    else
-      break
-    fi
-  done
-}
-
-#
 # select_from()
 # selector for various functions
 #
@@ -344,7 +328,6 @@ copy_guest(){
   edit_vm ${IMAGE_NAME}
 }
 
-
 # start of the script
 if [ $# -lt 1 ]; then
   usage;
@@ -371,6 +354,10 @@ else
     del)
       echo " < delete guest > "
       delete_guest
+      ;;
+    convert)
+      echo " < convert lvm to qcow2 > "
+      convert_guest
       ;;
     *)
       usage
