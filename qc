@@ -39,7 +39,7 @@ MOUNT="/bin/mount"
 UMOUNT="/bin/umount"
 LVCREATE="/sbin/lvcreate"
 LVREMOVE="/sbin/lvremove"
-LVDISPLAY="/sbin/lvdisplay"
+LVS="/sbin/lvs"
 RC_SERVICE="/sbin/rc-service"
 KPARTX="/sbin/kpartx"
 CUT="/bin/cut"
@@ -290,7 +290,7 @@ copy_guest(){
   DEFAULT_CONF_FILE="/etc/conf.d/kvm.${IMAGE_TO_COPY}"
   
   # get the size of the original guest
-  COPY_SIZE=`${LVDISPLAY} ${VG_PATH}/${CP_GUEST} | ${GREP} Size | ${AWK} '{ print $3 }'`
+  COPY_SIZE=`${LVS} ${VG_PATH}/${CP_GUEST} -o LV_SIZE --noheadings --units G --nosuffix`
 
   echo -n "Would you like to create an Gentoo Test Instance? [N/y]: "
   read input
