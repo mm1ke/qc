@@ -290,7 +290,7 @@ copy_guest(){
   DEFAULT_CONF_FILE="/etc/conf.d/kvm.${IMAGE_TO_COPY}"
   
   # get the size of the original guest
-  COPY_SIZE=`${LVS} ${VG_PATH}/${CP_GUEST} -o LV_SIZE --noheadings --units G --nosuffix`
+  COPY_SIZE=`${LVS} ${VG_PATH}/${CP_GUEST} -o LV_SIZE --noheadings --units b --nosuffix`
 
   echo -n "Would you like to create an Gentoo Test Instance? [N/y]: "
   read input
@@ -314,7 +314,7 @@ copy_guest(){
   info_changes copy
 
   # great a new lvm partition
-  create_lv "${COPY_SIZE}G" ${IMAGE_NAME} ${VG_PATH}
+  create_lv "${COPY_SIZE}b" ${IMAGE_NAME} ${VG_PATH}
 
   # make sure the vm to copy is down or create snapshot
   if ( ${RC_SERVICE} kvm.${CP_GUEST} status > /dev/null ); then
