@@ -372,7 +372,7 @@ convert_guest(){
     fi
   done
   
-  info_changes
+  info_changes convert
   
   ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2  
 }
