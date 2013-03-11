@@ -44,6 +44,7 @@ RC_SERVICE="/sbin/rc-service"
 KPARTX="/sbin/kpartx"
 CUT="/bin/cut"
 QEMUIMG="/usr/bin/qemu-img"
+GZIP="/usr/bin/pigz" # WARNING: not gzip (pigz needs to be installed)
 
 # default paths
 VG_NAME="vms"
@@ -81,11 +82,11 @@ config_change(){
 # usage of the script
 #
 usage(){
-  echo "$0 copy		copy a exicting guest"
-  echo "$0 new		creating a new guest"
-  echo "$0 edit		edit guest config file"
-  echo "$0 del		delete a guest image"
-  echo "$0 convert	convert a lvm2 image to qcow2"
+  echo "$0 copy			copy a exicting guest"
+  echo "$0 new			creating a new guest"
+  echo "$0 edit			edit guest config file"
+  echo "$0 del			delete a guest image"
+  echo "$0 convert [path]	convert a lvm2 image to qcow2"
   exit 1
 }
 
@@ -342,13 +343,14 @@ convert_guest(){
   echo "Select the image to convert:"
   CONV_GUEST=$(select_from "`${LS} ${VG_PATH}`")
   while true; do
-    echo -n "Set path, where the image should be stored: "
+    echo -n "Set path, where the image should be stored [default: $QCOW2_PATH]: "
     read input
     if ! [ -z ${input} ]; then
-      if ! [ -d "${input}" ]; then
+      QCOW2_PATH=${input}
+    else
+      if ! [ -d "${QCOW2_PATH}" ]; then
 	echo "Path dosent exists"
       else
-	QCOW2_PATH=${input}
 	break
       fi
     fi
@@ -401,6 +403,7 @@ else
       delete_guest
       ;;
     convert)
+      QCOW2_PATH=$2
       echo " < convert lvm to qcow2 > "
       convert_guest
       ;;
