@@ -155,6 +155,8 @@ info_changes(){
       ;;
     del)
       echo " Guest to delete: ${RM_GUEST}"
+      echo " + config: /etc/conf.d/kvm.${RM_GUEST}"
+      echo " + init: /etc/init.d/kvm.${RM_GUEST}"
       ;;
     convert)
       echo " Image to convert ${CONV_GUEST}"
