@@ -162,6 +162,7 @@ info_changes(){
     convert)
       echo " Image to convert ${CONV_GUEST}"
       echo " Full path of the image: ${QCOW2_PATH}/${QCOW2_NAME}.qcow2"
+      (${compress_image} && echo " Image will be compressed"
       ;;
     esac
   echo "#===================#"
@@ -373,9 +374,21 @@ convert_guest(){
     fi
   done
   
+  echo -n "Would you like to compress the image? [N/y]: "
+  read input
+  if [ "${input}" == "y" ]; then
+    compress_image=true
+  fi
+  
   info_changes convert
   
+  echo -n "Converting..."
   ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2  
+  
+  if (${compress_image}); then
+    echo -n "Compressing..."
+    ${GZIP} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2 
+  fi
 }
 
 # start of the script
