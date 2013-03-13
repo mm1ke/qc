@@ -52,6 +52,7 @@ VG_PATH="/dev/${VG_NAME}"
 IMAGE_NAME=""
 IMAGE_SIZE="20G"
 SNAPSHOTSIZE="5G"
+DEFAULT_ROOT_PART="3"
 
 DEFAULT_CONF_FILE="/etc/conf.d/kvm.init"
 DEFAULT_INIT_FILE="/etc/init.d/kvm.init"
@@ -190,11 +191,11 @@ edit_vm() {
   ${KPARTX} -a "${VG_PATH}/${IMAGE_NAME}"
   
   # basically i suppose the / partition is the third partition
-  # which could be either $name+p3 or $name+3
-  if [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}p3 ]; then
-    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}p3 /tmp/${TMP_DIR}
-  elif [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}3 ]; then
-    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}3 /tmp/${TMP_DIR}
+  # which could be either $name+p3 or $name+${DEFAULT_ROOT_PART}
+  if [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} ]; then
+    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} /tmp/${TMP_DIR}
+  elif [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}${DEFAULT_ROOT_PART} ]; then
+    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}${DEFAULT_ROOT_PART} /tmp/${TMP_DIR}
   else
     echo "*** WARNING! No root partition found. No settings will be made ***"
     ${RM} -rf /tmp/${TMP_DIR}
