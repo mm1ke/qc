@@ -53,7 +53,7 @@ IMAGE_NAME=""
 IMAGE_SIZE="20G"
 SNAPSHOTSIZE="5G"
 
-DEFAULT_CONF_FILE="/etc/conf.d/kvm.confd"
+DEFAULT_CONF_FILE="/etc/conf.d/kvm.init"
 DEFAULT_INIT_FILE="/etc/init.d/kvm.init"
 # TODO: Set proper path (usr/local/bin??)
 GSS="/mnt/data/public/gss.sh"
