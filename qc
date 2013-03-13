@@ -140,9 +140,10 @@ create_lv(){
 # outputs the actual changes
 #
 info_changes(){
-  echo " == QC is ready to start == "
-  echo "DOING: ${doing}"
-  echo "#===================#"
+  echo "#====================================#"
+  echo "#        QC is ready to start        #"
+  echo "Overview: ${doing}"
+  echo "#====================================#"
   case ${doing} in
     copy)
       echo " Image to copy: ${IMAGE_TO_COPY}"
@@ -170,7 +171,7 @@ info_changes(){
       echo " Full path of the image: ${COMP_PATH}/${COMP_GUEST}.gz"
       ;;
     esac
-  echo "#===================#"
+  echo "#====================================#"
   pause "Press any key to continue (Cancel with CTRL+C) ..."
 }
 
@@ -435,36 +436,36 @@ if [ $# -lt 1 ]; then
   usage;
 else
   doing="${1}"
-  echo ">--------< QC >--------<"
-  echo ">---< Qemu Control >---<"
+  echo ">---------------< QC >---------------<"
+  echo ">----------< Qemu Control >----------<"
   pause "Press any key to continue ..."
-  echo "=============================="
+  echo ">====================================<"
   echo "Default LV is \"${VG_PATH}\" "
   case ${1} in
     copy)
-      echo " < copy images > "
+      echo ">___________copy images__________<"
       copy_guest
       ;;
     new)
-      echo " < create image > "
+      echo ">__________create image__________<"
       new_guest
       ;;
     edit)
-      echo " < edit config > "
+      echo ">___________edit config__________<"
       edit_config
       ;;
     del)
-      echo " < delete guest > "
+      echo ">__________delete guest__________<"
       delete_guest
       ;;
     convert)
       QCOW2_PATH=$2
-      echo " < convert lvm to qcow2 > "
+      echo ">______convert lvm to qcow2______<"
       convert_guest
       ;;
     compress)
       COMP_PATH=$2
-      echo " < compress a lvm partition > "
+      echo ">____compress a lvm partition____<"
       compress_lvm
       ;;
     *)
