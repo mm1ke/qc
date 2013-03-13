@@ -88,6 +88,7 @@ usage(){
   echo "$0 edit			edit guest config file"
   echo "$0 del			delete a guest image"
   echo "$0 convert [path]	convert a lvm2 image to qcow2"
+  echo "$0 compress [path]	compress a lvm2 image"
   exit 1
 }
 
@@ -162,7 +163,11 @@ info_changes(){
     convert)
       echo " Image to convert ${CONV_GUEST}"
       echo " Full path of the image: ${QCOW2_PATH}/${QCOW2_NAME}.qcow2"
-      (${compress_image} && echo " Image will be compressed"
+      (${compress_image}) && echo " Image will be compressed"
+      ;;
+    compress)
+      echo " Image to compress ${COMP_GUEST}"
+      echo " Full path of the image: ${COMP_PATH}/${COMP_GUEST}.gz"
       ;;
     esac
   echo "#===================#"
@@ -278,6 +283,40 @@ new_guest(){
 
   # modify config file
   edit_init_conf ${VG_PATH} ${IMAGE_NAME}
+}
+
+#
+# compress_lvm()
+# compress a lvm partition
+#
+compress_lvm() {
+  echo "Select the image to compress:"
+  COMP_GUEST=$(select_from "`${LS} ${VG_PATH}`")
+  echo "You choose ${COMP_GUEST}"
+  
+  while true; do
+    echo -n "Set path, where the file should be stored [default: ${COMP_PATH}]: "
+    read input
+    if ! [ -z ${input} ]; then
+      COMP_PATH=${input}
+    else
+      if ! [ -d "${COMP_PATH}" ]; then
+	echo "Path dosent exists"
+      else
+	break
+      fi
+    fi
+  done
+  
+  info_changes compress
+  
+  # create snapshot
+  ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${COMP_GUEST}-snapshot ${VG_PATH}/${COMP_GUEST}
+  echo -n "compress image..."
+  ${DD} if=${VG_PATH}/${COMP_GUEST}-snapshot bs=4k conv=sync,noerror 2>/dev/null | ${GZIP} -c > ${COMP_PATH}/${COMP_GUEST}.gz
+  
+  # delete snapshot
+  ${LVREMOVE} --force ${VG_PATH}/${COMP_GUEST}-snapshot
 }
 
 #
@@ -422,6 +461,11 @@ else
       QCOW2_PATH=$2
       echo " < convert lvm to qcow2 > "
       convert_guest
+      ;;
+    compress)
+      COMP_PATH=$2
+      echo " < compress a lvm partition > "
+      compress_lvm
       ;;
     *)
       usage
