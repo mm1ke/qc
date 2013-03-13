@@ -443,29 +443,29 @@ else
   echo "Default LV is \"${VG_PATH}\" "
   case ${1} in
     copy)
-      echo ">___________copy images__________<"
+      echo ">============copy images=============<"
       copy_guest
       ;;
     new)
-      echo ">__________create image__________<"
+      echo ">============create image============<"
       new_guest
       ;;
     edit)
-      echo ">___________edit config__________<"
+      echo ">============edit config=============<"
       edit_config
       ;;
     del)
-      echo ">__________delete guest__________<"
+      echo ">============delete guest============<"
       delete_guest
       ;;
     convert)
       QCOW2_PATH=$2
-      echo ">______convert lvm to qcow2______<"
+      echo ">=======convert lvm to qcow2=========<"
       convert_guest
       ;;
     compress)
       COMP_PATH=$2
-      echo ">____compress a lvm partition____<"
+      echo ">======compress a lvm partition======<"
       compress_lvm
       ;;
     *)
