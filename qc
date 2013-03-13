@@ -421,11 +421,11 @@ convert_guest(){
   
   info_changes convert
   
-  echo -n "Converting..."
+  echo "Converting..."
   ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2  
   
   if (${compress_image}); then
-    echo -n "Compressing..."
+    echo "Compressing..."
     ${GZIP} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2 
   fi
 }
