@@ -54,10 +54,9 @@ IMAGE_SIZE="20G"
 SNAPSHOTSIZE="5G"
 DEFAULT_ROOT_PART="3"
 
+# config files
 DEFAULT_CONF_FILE="/etc/conf.d/kvm.init"
 DEFAULT_INIT_FILE="/etc/init.d/kvm.init"
-# TODO: Set proper path (usr/local/bin??)
-GSS="/mnt/data/public/gss.sh"
 
 #
 # pause()
@@ -212,14 +211,6 @@ edit_vm() {
     
   config_change "hostname" "${IMAGE_NAME}" "/tmp/${TMP_DIR}/etc/conf.d/hostname"  
   
-  # change settings with gss
-  if (${GENTOO_TEST_INSTANCE}); then
-    [ -e ${GSS} ] && ${GSS} batchmode "/tmp/${TMP_DIR}/" gti
-  fi
-
-  # copy gss to root's home dir
-  [ -e ${GSS} ] && ${CP} ${GSS} "/tmp/${TMP_DIR}/root/"
-  
   #unmount vm
   ${UMOUNT} /tmp/${TMP_DIR}
   ${RM} -rf /tmp/${TMP_DIR}
@@ -337,25 +328,8 @@ copy_guest(){
   # get the size of the original guest
   COPY_SIZE=`${LVS} ${VG_PATH}/${CP_GUEST} -o LV_SIZE --noheadings --units b --nosuffix`
 
-  echo -n "Would you like to create an Gentoo Test Instance? [N/y]: "
-  read input
-  if [ "${input}" == "y" ]; then
-    GENTOO_TEST_INSTANCE="true"
-    GENTOO_TEST_INSTANCE_ID=0
-    while ( ${LS} /etc/conf.d/|${GREP} kvm.gti${GENTOO_TEST_INSTANCE_ID} >/dev/null 2>&1 ); do
-      let "GENTOO_TEST_INSTANCE_ID += 1"
-      if [ ${GENTOO_TEST_INSTANCE_ID} -eq 9 ]; then
-	echo "No free Gentoo Text Instance avaiable. Please delete one first"
-	exit 1
-      fi
-    done
-    echo "gti${GENTOO_TEST_INSTANCE_ID} is free."
-    IMAGE_NAME="gti${GENTOO_TEST_INSTANCE_ID}"
-  else
-    # set image name
-    set_image_name
-  fi
-
+  set_image_name
+  
   info_changes copy
 
   # great a new lvm partition
