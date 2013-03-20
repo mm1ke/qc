@@ -147,7 +147,6 @@ info_changes(){
     copy)
       echo " Image to copy: ${IMAGE_TO_COPY}"
       echo " New Guest Name: ${IMAGE_NAME}"
-      (${GENTOO_TEST_INSTANCE}) && echo " This will be a Gentoo Test Instance"
       echo " New Guest will be stored under: ${VG_PATH}/${IMAGE_NAME}"
       ;;
     new)
@@ -321,7 +320,6 @@ copy_guest(){
   echo "You choose ${CP_GUEST}"
   
   # set important vars
-  GENTOO_TEST_INSTANCE="false"
   IMAGE_TO_COPY=${CP_GUEST}
   DEFAULT_CONF_FILE="/etc/conf.d/kvm.${IMAGE_TO_COPY}"
   
@@ -334,7 +332,7 @@ copy_guest(){
 
   # great a new lvm partition
   create_lv "${COPY_SIZE}b" ${IMAGE_NAME} ${VG_PATH}
-
+# 
   # make sure the vm to copy is down or create snapshot
   if ( ${RC_SERVICE} kvm.${CP_GUEST} status > /dev/null ); then
     ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${CP_GUEST}-snapshot ${VG_PATH}/${CP_GUEST}
