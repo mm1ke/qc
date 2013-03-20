@@ -120,6 +120,7 @@ set_image_name() {
 # sets the path for compress/convert 'ing
 #
 set_image_path() {
+  # ${1} = default path (given over cmdline)
   while true; do
     echo -n "Set path, where the file should be stored [default: ${1}]: "
     read input
@@ -241,7 +242,8 @@ new_guest(){
   echo -n "Please set the image size [default is: ${IMAGE_SIZE}]: "
   read input
   [ -z "${input}" ] || IMAGE_SIZE="${input}"
-  set_image_name "${VG_PATH}"
+  
+  set_image_name "${VG_PATH}" "new_guest"
   
   info_changes new
   
@@ -270,16 +272,12 @@ copy_guest(){
   
   create_lv "${COPY_SIZE}b" "${IMAGE_NAME}" "${VG_PATH}"
   
-  # make sure the vm to copy is down or create snapshot
-  if ( ${RC_SERVICE} kvm.${CP_GUEST} status > /dev/null ); then
-    ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${CP_GUEST}-snapshot "${VG_PATH}/${CP_GUEST}"
-    IMAGE_TO_COPY="${CP_GUEST}-snapshot"
-  fi
-  # copy the image
-  ${DD} if=${VG_PATH}/${IMAGE_TO_COPY} bs=4k conv=sync,noerror of=${VG_PATH}/${IMAGE_NAME}
-  
-  # remove snapshot if one exists
-  [ -e "${VG_PATH}/${CP_GUEST}-snapshot" ] && ${LVREMOVE} --force ${VG_PATH}/${CP_GUEST}-snapshot
+  # create snapshot
+  ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${CP_GUEST}-snapshot "${VG_PATH}/${CP_GUEST}"
+  echo "Copy..."
+  ${DD} if=${VG_PATH}/${IMAGE_TO_COPY}-snapshot bs=4k conv=sync,noerror of=${VG_PATH}/${IMAGE_NAME}
+  # delete snapshot
+  ${LVREMOVE} --force ${VG_PATH}/${CP_GUEST}-snapshot
   
   # edit settings of the new vm
   # mount vm
@@ -324,9 +322,8 @@ compress_lvm() {
   
   # create snapshot
   ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${COMP_GUEST}-snapshot ${VG_PATH}/${COMP_GUEST}
-  echo -n "compress image..."
+  echo -n "Compressing..."
   ${DD} if=${VG_PATH}/${COMP_GUEST}-snapshot bs=4k conv=sync,noerror 2>/dev/null | ${GZIP} -c > ${IMAGE_PATH}/${IMAGE_NAME}.gz
-  
   # delete snapshot
   ${LVREMOVE} --force ${VG_PATH}/${COMP_GUEST}-snapshot
 }
@@ -351,8 +348,12 @@ convert_guest(){
   
   info_changes convert
   
+  # create snapshot
+  ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${CONV_GUEST}-snapshot ${VG_PATH}/${CONV_GUEST}
   echo "Converting..."
-  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${IMAGE_PATH}/${IMAGE_NAME}.qcow2  
+  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST}-snapshot ${IMAGE_PATH}/${IMAGE_NAME}.qcow2  
+  # delete snapshot
+  ${LVREMOVE} --force ${VG_PATH}/${COMP_GUEST}-snapshot
   
   if (${compress_image}); then
     echo "Compressing..."
