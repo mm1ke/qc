@@ -67,8 +67,8 @@ usage(){
   echo "$0 new			creating a new guest"
   echo "$0 edit			edit guest config file"
   echo "$0 del			delete a guest image"
-  echo "$0 convert [path]	convert a lvm2 image to qcow2"
-  echo "$0 compress [path]	compress a lvm2 image"
+  echo "$0 convert [path]		convert a lvm2 image to qcow2"
+  echo "$0 compress [path]		compress a lvm2 image"
   exit 1
 }
 
@@ -187,8 +187,9 @@ edit_vm() {
   ${MKDIR} /tmp/${TMP_DIR}
   ${KPARTX} -a "${VG_PATH}/${IMAGE_NAME}"
   
-  # basically i suppose the / partition is the third partition
-  # which could be either $name+p3 or $name+${DEFAULT_ROOT_PART}
+  # basically i suppose the root partition is the third partition
+  # which could be either $name+p3 or $name+$3
+  # this can be overwritten with ${DEFAULT_ROOT_PART}
   if [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} ]; then
     ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} /tmp/${TMP_DIR}
   elif [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}${DEFAULT_ROOT_PART} ]; then
