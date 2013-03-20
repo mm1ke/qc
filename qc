@@ -311,12 +311,14 @@ compress_lvm() {
     fi
   done
   
+  set_image_name ${COMP_PATH} ${COMP_GUEST}
+  
   info_changes compress
   
   # create snapshot
   ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${COMP_GUEST}-snapshot ${VG_PATH}/${COMP_GUEST}
   echo -n "compress image..."
-  ${DD} if=${VG_PATH}/${COMP_GUEST}-snapshot bs=4k conv=sync,noerror 2>/dev/null | ${GZIP} -c > ${COMP_PATH}/${COMP_GUEST}.gz
+  ${DD} if=${VG_PATH}/${COMP_GUEST}-snapshot bs=4k conv=sync,noerror 2>/dev/null | ${GZIP} -c > ${COMP_PATH}/${IMAGE_NAME}.gz
   
   # delete snapshot
   ${LVREMOVE} --force ${VG_PATH}/${COMP_GUEST}-snapshot
@@ -329,6 +331,8 @@ compress_lvm() {
 convert_guest(){
   echo "Select the image to convert:"
   CONV_GUEST=$(select_from "`${LS} ${VG_PATH}`")
+  echo "You choose ${CONV_GUEST}"
+  
   while true; do
     echo -n "Set path, where the image should be stored [default: $QCOW2_PATH]: "
     read input
@@ -348,7 +352,7 @@ convert_guest(){
   echo -n "Would you like to compress the image? [N/y]: "
   read input
   if [ "${input}" == "y" ]; then
-    compress_image=true
+    local compress_image=true
   fi
   
   info_changes convert
