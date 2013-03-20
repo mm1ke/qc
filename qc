@@ -300,8 +300,8 @@ compress_lvm() {
   while true; do
     echo -n "Set path, where the file should be stored [default: ${COMP_PATH}]: "
     read input
-    if ! [ -z ${input} ]; then
-      COMP_PATH=${input}
+    if ! [ -z "${input}" ]; then
+      COMP_PATH="${input}"
     else
       if ! [ -d "${COMP_PATH}" ]; then
 	echo "Path dosent exists"
@@ -336,8 +336,8 @@ convert_guest(){
   while true; do
     echo -n "Set path, where the image should be stored [default: $QCOW2_PATH]: "
     read input
-    if ! [ -z ${input} ]; then
-      QCOW2_PATH=${input}
+    if ! [ -z "${input}" ]; then
+      QCOW2_PATH="${input}"
     else
       if ! [ -d "${QCOW2_PATH}" ]; then
 	echo "Path dosent exists"
