@@ -116,6 +116,27 @@ set_image_name() {
 }
 
 #
+# set_image_path()
+# sets the path for compress/convert 'ing
+#
+set_image_path() {
+  while true; do
+    echo -n "Set path, where the file should be stored [default: ${1}]: "
+    read input
+    if [ -z "${input}" ]; then
+      IMAGE_PATH="${1}"
+    else
+      IMAGE_PATH="${input}"
+    fi
+    if [ -d "${IMAGE_PATH}" ]; then
+      echo "Path dosen't exist, choose different one"
+    else
+      break
+    fi
+  done
+}
+
+#
 # creat_lv()
 # creates a new lvm partition
 #
@@ -297,28 +318,14 @@ compress_lvm() {
   COMP_GUEST=$(select_from "`${LS} ${VG_PATH}`")
   echo "You choose ${COMP_GUEST}"
   
-  while true; do
-    echo -n "Set path, where the file should be stored [default: ${COMP_PATH}]: "
-    read input
-    if ! [ -z "${input}" ]; then
-      COMP_PATH="${input}"
-    else
-      if ! [ -d "${COMP_PATH}" ]; then
-	echo "Path dosent exists"
-      else
-	break
-      fi
-    fi
-  done
-  
-  set_image_name "${COMP_PATH}" "${COMP_GUEST}"
-  
+  set_image_path "${COMP_PATH}"
+  set_image_name "${IMAGE_PATH}" "${COMP_GUEST}"
   info_changes compress
   
   # create snapshot
   ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${COMP_GUEST}-snapshot ${VG_PATH}/${COMP_GUEST}
   echo -n "compress image..."
-  ${DD} if=${VG_PATH}/${COMP_GUEST}-snapshot bs=4k conv=sync,noerror 2>/dev/null | ${GZIP} -c > ${COMP_PATH}/${IMAGE_NAME}.gz
+  ${DD} if=${VG_PATH}/${COMP_GUEST}-snapshot bs=4k conv=sync,noerror 2>/dev/null | ${GZIP} -c > ${IMAGE_PATH}/${IMAGE_NAME}.gz
   
   # delete snapshot
   ${LVREMOVE} --force ${VG_PATH}/${COMP_GUEST}-snapshot
@@ -333,21 +340,8 @@ convert_guest(){
   CONV_GUEST=$(select_from "`${LS} ${VG_PATH}`")
   echo "You choose ${CONV_GUEST}"
   
-  while true; do
-    echo -n "Set path, where the image should be stored [default: $QCOW2_PATH]: "
-    read input
-    if ! [ -z "${input}" ]; then
-      QCOW2_PATH="${input}"
-    else
-      if ! [ -d "${QCOW2_PATH}" ]; then
-	echo "Path dosent exists"
-      else
-	break
-      fi
-    fi
-  done
-  
-  set_image_name ${QCOW2_PATH} ${CONV_GUEST}
+  set_image_path "${QCOW2_PATH}"
+  set_image_name "${IMAGE_PATH}" "${CONV_GUEST}"
   
   echo -n "Would you like to compress the image? [N/y]: "
   read input
@@ -358,11 +352,11 @@ convert_guest(){
   info_changes convert
   
   echo "Converting..."
-  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${IMAGE_NAME}.qcow2  
+  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${IMAGE_PATH}/${IMAGE_NAME}.qcow2  
   
   if (${compress_image}); then
     echo "Compressing..."
-    ${GZIP} ${QCOW2_PATH}/${IMAGE_NAME}.qcow2 
+    ${GZIP} ${IMAGE_PATH}/${IMAGE_NAME}.qcow2 
   fi
 }
 
