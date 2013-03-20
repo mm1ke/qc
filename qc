@@ -43,7 +43,8 @@ RC_SERVICE="/sbin/rc-service"
 KPARTX="/sbin/kpartx"
 CUT="/bin/cut"
 QEMUIMG="/usr/bin/qemu-img"
-GZIP="/usr/bin/pigz" # WARNING: not gzip (pigz needs to be installed)
+# WARNING: not gzip (pigz needs to be installed)
+GZIP="/usr/bin/pigz"
 
 # default paths
 VG_NAME="vms"
@@ -87,7 +88,7 @@ config_change(){
 # selector for various functions
 #
 select_from(){
-  select SELECT_VAR in "${1}"; do
+  select SELECT_VAR in ${1}; do
     echo "${SELECT_VAR}"
     break;
   done
@@ -107,7 +108,7 @@ set_image_name() {
     else
       IMAGE_NAME="${input}"
     fi
-    if [ -e "${1}/${input}" ]; then
+    if [ -e "${1}/${IMAGE_NAME}" ]; then
       echo "File exists, choose different name"
     else
       break
@@ -129,7 +130,7 @@ set_image_path() {
     else
       IMAGE_PATH="${input}"
     fi
-    if [ -d "${IMAGE_PATH}" ]; then
+    if ! [ -d "${IMAGE_PATH}" ]; then
       echo "Path dosen't exist, choose different one"
     else
       break
@@ -143,7 +144,7 @@ set_image_path() {
 #
 create_lv(){
   #${1}=size, ${2}=image_name, ${3}=vg_path
-  ${LVCREATE} --size "${1}" --name "${2}" "${3}"
+  ${LVCREATE} --size ${1} --name "${2}" "${3}"
   ${CP} "${DEFAULT_CONF_FILE}" /etc/conf.d/kvm.${2}
   ${LN} -s "${DEFAULT_INIT_FILE}" /etc/init.d/kvm.${2}
   
@@ -179,12 +180,12 @@ info_changes(){
       ;;
     convert)
       echo " Image to convert ${CONV_GUEST}"
-      echo " Full path of the image: ${QCOW2_PATH}/${IMAGE_NAME}.qcow2"
+      echo " Full path of the image: ${IMAGE_PATH}/${IMAGE_NAME}.qcow2"
       (${compress_image}) && echo " Image will be compressed"
       ;;
     compress)
       echo " Image to compress ${COMP_GUEST}"
-      echo " Full path of the image: ${COMP_PATH}/${COMP_GUEST}.gz"
+      echo " Full path of the image: ${IMAGE_PATH}/${IMAGE_NAME}.gz"
       ;;
     esac
   echo "#====================================#"
@@ -338,12 +339,13 @@ convert_guest(){
   echo "You choose ${CONV_GUEST}"
   
   set_image_path "${QCOW2_PATH}"
-  set_image_name "${IMAGE_PATH}" "${CONV_GUEST}"
+  set_image_name "${IMAGE_PATH}" "${CONV_GUEST}.qcow2"
   
   echo -n "Would you like to compress the image? [N/y]: "
+  local compress_image=false
   read input
   if [ "${input}" == "y" ]; then
-    local compress_image=true
+    compress_image=true
   fi
   
   info_changes convert
@@ -353,7 +355,7 @@ convert_guest(){
   echo "Converting..."
   ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST}-snapshot ${IMAGE_PATH}/${IMAGE_NAME}.qcow2  
   # delete snapshot
-  ${LVREMOVE} --force ${VG_PATH}/${COMP_GUEST}-snapshot
+  ${LVREMOVE} --force ${VG_PATH}/${CONV_GUEST}-snapshot
   
   if (${compress_image}); then
     echo "Compressing..."
