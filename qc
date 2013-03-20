@@ -84,17 +84,6 @@ config_change(){
 }
 
 #
-# edit_init_conf()
-# set guest settings (in kvm.*)
-#
-edit_init_conf(){
-  #${1}=vg_path, ${2}=image_name
-  local new_mac=`printf 'DE:AD:CA:5E:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256))`
-  config_change "VM_IMAGE" "${1}/${2}" "/etc/conf.d/kvm.${2}"
-  config_change "VM_MAC_ADDRESS" "${new_mac}" "/etc/conf.d/kvm.${2}"
-}
-
-#
 # select_from()
 # selector for various functions
 #
@@ -135,6 +124,10 @@ create_lv(){
   ${LVCREATE} --size ${1} --name ${2} ${3}
   ${CP} ${DEFAULT_CONF_FILE} /etc/conf.d/kvm.${2}
   ${LN} -s ${DEFAULT_INIT_FILE} /etc/init.d/kvm.${2}
+  
+  local new_mac=`printf 'DE:AD:CA:5E:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256))`
+  config_change "VM_IMAGE" "${3}/${2}" "/etc/conf.d/kvm.${2}"
+  config_change "VM_MAC_ADDRESS" "${new_mac}" "/etc/conf.d/kvm.${2}"
 }
 
 #
@@ -260,14 +253,11 @@ new_guest(){
   echo -n "Please set the image size [default is: ${IMAGE_SIZE}]: "
   read input
   [ -z ${input} ] || IMAGE_SIZE=${input}
-
   set_image_name
   
   info_changes new
+  
   create_lv ${IMAGE_SIZE} ${IMAGE_NAME} ${VG_PATH}
-
-  # modify config file
-  edit_init_conf ${VG_PATH} ${IMAGE_NAME}
 }
 
 #
@@ -285,10 +275,10 @@ copy_guest(){
   
   # get the size of the original guest
   COPY_SIZE=`${LVS} ${VG_PATH}/${CP_GUEST} -o LV_SIZE --noheadings --units b --nosuffix`
-
   set_image_name
   
   info_changes copy
+  
   create_lv "${COPY_SIZE}b" ${IMAGE_NAME} ${VG_PATH}
   
   # make sure the vm to copy is down or create snapshot
@@ -296,12 +286,8 @@ copy_guest(){
     ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${CP_GUEST}-snapshot ${VG_PATH}/${CP_GUEST}
     IMAGE_TO_COPY="${CP_GUEST}-snapshot"
   fi
-  
   # copy the image
   ${DD} if=${VG_PATH}/${IMAGE_TO_COPY} bs=4k conv=sync,noerror of=${VG_PATH}/${IMAGE_NAME}
-  
-  # modify config file
-  edit_init_conf ${VG_PATH} ${IMAGE_NAME}
   
   # remove snapshot if one exists
   [ -e "${VG_PATH}/${CP_GUEST}-snapshot" ] && ${LVREMOVE} --force ${VG_PATH}/${CP_GUEST}-snapshot
