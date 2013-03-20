@@ -170,39 +170,6 @@ info_changes(){
 }
 
 #
-# edit_vm()
-# set guest settings (in the guest)
-#
-edit_vm() {
-
-  # mount vm
-  TMP_DIR="${IMAGE_NAME}-${RANDOM}"
-  ${MKDIR} /tmp/${TMP_DIR}
-  ${KPARTX} -a "${VG_PATH}/${IMAGE_NAME}"
-  
-  # basically i suppose the root partition is the third partition
-  # which could be either $name+p3 or $name+$3
-  # this can be overwritten with ${DEFAULT_ROOT_PART}
-  if [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} ]; then
-    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} /tmp/${TMP_DIR}
-  elif [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}${DEFAULT_ROOT_PART} ]; then
-    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}${DEFAULT_ROOT_PART} /tmp/${TMP_DIR}
-  else
-    echo "*** WARNING! No root partition found. No settings will be made ***"
-    ${RM} -rf /tmp/${TMP_DIR}
-    ${KPARTX} -d "${VG_PATH}/${IMAGE_NAME}"
-    return 1
-  fi
-    
-  config_change "hostname" "${IMAGE_NAME}" "/tmp/${TMP_DIR}/etc/conf.d/hostname"  
-  
-  #unmount vm
-  ${UMOUNT} /tmp/${TMP_DIR}
-  ${RM} -rf /tmp/${TMP_DIR}
-  ${KPARTX} -d "${VG_PATH}/${IMAGE_NAME}"
-}
-
-#
 # edit_config
 # change a exiting config
 #
@@ -292,8 +259,32 @@ copy_guest(){
   # remove snapshot if one exists
   [ -e "${VG_PATH}/${CP_GUEST}-snapshot" ] && ${LVREMOVE} --force ${VG_PATH}/${CP_GUEST}-snapshot
   
-  # modify settings in the guest
-  edit_vm ${IMAGE_NAME}
+  # edit settings of the new vm
+  # mount vm
+  TMP_DIR="${IMAGE_NAME}-${RANDOM}"
+  ${MKDIR} /tmp/${TMP_DIR}
+  ${KPARTX} -a "${VG_PATH}/${IMAGE_NAME}"
+  
+  # basically i suppose the root partition is the third partition
+  # which could be either $name+p3 or $name+$3
+  # this can be overwritten with ${DEFAULT_ROOT_PART}
+  if [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} ]; then
+    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}p${DEFAULT_ROOT_PART} /tmp/${TMP_DIR}
+  elif [ -e /dev/mapper/${VG_NAME}-${IMAGE_NAME}${DEFAULT_ROOT_PART} ]; then
+    ${MOUNT} /dev/mapper/${VG_NAME}-${IMAGE_NAME}${DEFAULT_ROOT_PART} /tmp/${TMP_DIR}
+  else
+    echo "*** WARNING! No root partition found. No settings will be made ***"
+    ${RM} -rf /tmp/${TMP_DIR}
+    ${KPARTX} -d "${VG_PATH}/${IMAGE_NAME}"
+    exit 1
+  fi
+    
+  config_change "hostname" "${IMAGE_NAME}" "/tmp/${TMP_DIR}/etc/conf.d/hostname"  
+  
+  #unmount vm
+  ${UMOUNT} /tmp/${TMP_DIR}
+  ${RM} -rf /tmp/${TMP_DIR}
+  ${KPARTX} -d "${VG_PATH}/${IMAGE_NAME}"
 }
 
 #
