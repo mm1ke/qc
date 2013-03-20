@@ -59,14 +59,6 @@ DEFAULT_CONF_FILE="/etc/conf.d/kvm.init"
 DEFAULT_INIT_FILE="/etc/init.d/kvm.init"
 
 #
-# pause()
-# pause with a custom string
-#
-pause(){
-  read -p "$*"
-}
-
-#
 # config_change()
 # change settings in a config file
 #
@@ -170,7 +162,7 @@ info_changes(){
       ;;
     esac
   echo "#====================================#"
-  pause "Press any key to continue (Cancel with CTRL+C) ..."
+  read -p "Press any key to continue (Cancel with CTRL+C) ..."
 }
 
 #
@@ -250,7 +242,7 @@ delete_guest(){
   
   echo "*** WARNING ***"
   info_changes del
-  pause "You really want to delete ${RM_GUEST}? (Press Ctrl+C for cancel) "
+  read -p "You really want to delete ${RM_GUEST}? (Press Ctrl+C for cancel) "
 
   # stop the virtual guest
   ( ${RC_SERVICE} kvm.${RM_GUEST} status > /dev/null ) && ${RC_SERVICE} kvm.${RM_GUEST} stop
@@ -332,7 +324,7 @@ copy_guest(){
 
   # great a new lvm partition
   create_lv "${COPY_SIZE}b" ${IMAGE_NAME} ${VG_PATH}
-# 
+  
   # make sure the vm to copy is down or create snapshot
   if ( ${RC_SERVICE} kvm.${CP_GUEST} status > /dev/null ); then
     ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${CP_GUEST}-snapshot ${VG_PATH}/${CP_GUEST}
@@ -410,7 +402,7 @@ else
   doing="${1}"
   echo ">---------------< QC >---------------<"
   echo ">----------< Qemu Control >----------<"
-  pause "Press any key to continue ..."
+  read -p "Press any key to continue ..."
   echo ">====================================<"
   echo "Default LV is \"${VG_PATH}\" "
   case ${1} in
