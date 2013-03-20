@@ -25,7 +25,6 @@
 # for creating new guests
 
 # programs
-QI="/usr/bin/qemu-img"
 LN="/bin/ln"
 CP="/bin/cp"
 SED="/bin/sed"
@@ -99,18 +98,19 @@ select_from(){
 # set the name of the image
 #
 set_image_name() {
+  # ${1} = path to check, ${2} = default image name
   while true; do
-    echo -n "Please set image name: "
+    echo -n "Please set image name [default: ${2}]: "
     read input
     if [ -z ${input} ]; then
-      echo "No name set. Please set one: "
+      IMAGE_NAME=${2}
     else
-      if [ -e "${VG_PATH}/${input}" ]; then
-	echo "Image exists already. Please choose a different name: "
-      else
-	IMAGE_NAME=${input}
-	break
-      fi
+      IMAGE_NAME=${input}
+    fi
+    if [ -e "${1}/${input}" ]; then
+      echo "File exists, choose different name"
+    else
+      break
     fi
   done
 }
@@ -157,7 +157,7 @@ info_changes(){
       ;;
     convert)
       echo " Image to convert ${CONV_GUEST}"
-      echo " Full path of the image: ${QCOW2_PATH}/${QCOW2_NAME}.qcow2"
+      echo " Full path of the image: ${QCOW2_PATH}/${IMAGE_NAME}.qcow2"
       (${compress_image}) && echo " Image will be compressed"
       ;;
     compress)
@@ -220,7 +220,7 @@ new_guest(){
   echo -n "Please set the image size [default is: ${IMAGE_SIZE}]: "
   read input
   [ -z ${input} ] || IMAGE_SIZE=${input}
-  set_image_name
+  set_image_name "${VG_PATH}"
   
   info_changes new
   
@@ -242,7 +242,8 @@ copy_guest(){
   
   # get the size of the original guest
   COPY_SIZE=`${LVS} ${VG_PATH}/${CP_GUEST} -o LV_SIZE --noheadings --units b --nosuffix`
-  set_image_name
+  
+  set_image_name ${VG_PATH} "${CP_GUEST}_new"
   
   info_changes copy
   
@@ -341,20 +342,8 @@ convert_guest(){
       fi
     fi
   done
-  while true; do
-    echo -n "Set Image name [default: ${CONV_GUEST}.qcow2]: "
-    read input
-    if [ -z ${input} ]; then
-      QCOW2_NAME=${CONV_GUEST}
-    else
-      QCOW2_NAME=${input}
-    fi
-    if [ -e "${QCOW2_PATH}/${QCOW2_NAME}.qcow2" ]; then
-      echo "File exists, choose different name"
-    else
-      break
-    fi
-  done
+  
+  set_image_name ${QCOW2_PATH} ${CONV_GUEST}
   
   echo -n "Would you like to compress the image? [N/y]: "
   read input
@@ -365,11 +354,11 @@ convert_guest(){
   info_changes convert
   
   echo "Converting..."
-  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2  
+  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST} ${QCOW2_PATH}/${IMAGE_NAME}.qcow2  
   
   if (${compress_image}); then
     echo "Compressing..."
-    ${GZIP} ${QCOW2_PATH}/${QCOW2_NAME}.qcow2 
+    ${GZIP} ${QCOW2_PATH}/${IMAGE_NAME}.qcow2 
   fi
 }
 
