@@ -21,8 +21,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # Discription:
-# qc - qemu create script
-# for creating new guests
+# qc - qemu control script
+# for creating, copy, compress and converting qemu guests
 
 # programs
 LN="/bin/ln"
