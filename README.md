@@ -1,0 +1,4 @@
+qc
+==
+
+qemu control script
