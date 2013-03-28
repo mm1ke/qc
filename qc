@@ -268,6 +268,9 @@ copy_guest(){
   COPY_SIZE=`${LVS} ${VG_PATH}/${CP_GUEST} -o LV_SIZE --noheadings --units b --nosuffix`
   
   set_image_name "${VG_PATH}" "${CP_GUEST}_new"
+  echo "Enter hostname of the new guest [default: ${IMAGE_NAME}]: "
+  read guest_hostname
+  [ -z "${guest_hostname}" ] || guest_hostname="${IMAGE_NAME}"
   
   info_changes copy
   
@@ -300,7 +303,7 @@ copy_guest(){
     exit 1
   fi
     
-  config_change "hostname" "${IMAGE_NAME}" "/tmp/${TMP_DIR}/etc/conf.d/hostname"  
+  config_change "hostname" "${guest_hostname}" "/tmp/${TMP_DIR}/etc/conf.d/hostname"  
   
   #unmount vm
   ${UMOUNT} /tmp/${TMP_DIR}
