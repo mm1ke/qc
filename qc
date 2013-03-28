@@ -167,6 +167,7 @@ info_changes(){
       echo " Image to copy: ${IMAGE_TO_COPY}"
       echo " New Guest Name: ${IMAGE_NAME}"
       echo " New Guest will be stored under: ${VG_PATH}/${IMAGE_NAME}"
+      echo " New Guest Hostname: ${guest_hostname}"
       ;;
     new)
       echo " New Guest Name: ${IMAGE_NAME}"
