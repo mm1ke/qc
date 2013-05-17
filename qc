@@ -353,13 +353,13 @@ convert_guest(){
   # create snapshot
   ${LVCREATE} --size ${SNAPSHOTSIZE} --snapshot --name ${CONV_GUEST}-snapshot ${VG_PATH}/${CONV_GUEST}
   echo "Converting..."
-  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST}-snapshot ${IMAGE_PATH}/${IMAGE_NAME}.qcow2  
+  ${QEMUIMG} convert -O qcow2 ${VG_PATH}/${CONV_GUEST}-snapshot ${IMAGE_PATH}/${IMAGE_NAME}
   # delete snapshot
   ${LVREMOVE} --force ${VG_PATH}/${CONV_GUEST}-snapshot
   
   if (${compress_image}); then
     echo "Compressing..."
-    ${GZIP} ${IMAGE_PATH}/${IMAGE_NAME}.qcow2 
+    ${GZIP} ${IMAGE_PATH}/${IMAGE_NAME}
   fi
 }
 
